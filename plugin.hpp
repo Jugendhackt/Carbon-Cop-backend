@@ -1,5 +1,6 @@
 #include <string>
 #include <time.h>
+#include <sys/time.h>
 #include <algorithm>
 #include <functional>
 
@@ -17,6 +18,8 @@ private:
 	std::string icon;
 	std::function<bool(std::string, Sqlite3DB*)> unlocked;
 };
+
+unsigned long long time();
 
 int getUserId(std::string userName, Sqlite3DB *db);
 bool checkUser(std::string userName, std::string password, Sqlite3DB *db);

@@ -17,6 +17,12 @@ cJSON* Challenge::toJson(std::string name, Sqlite3DB *db){
 	return json;
 }
 
+unsigned long long time(){
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (unsigned long long)(tv.tv_sec) * 1000 + (unsigned long long)(tv.tv_usec) / 1000;
+}
+
 std::vector<Challenge> challenges = {
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 5;
@@ -57,19 +63,19 @@ std::vector<Challenge> challenges = {
 
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
-		return lastTrack(getUserId(name, db), "bike", db) >= 5*24*60*60*1000;
+		return time() - lastTrack(getUserId(name, db), "car", db) >= 5*24*60*60*1000;
 	}, "streak bronze", "5 days no car", "data/icons/bronze_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
-		return lastTrack(getUserId(name, db), "bike", db) >= 10*24*60*60*1000;
+		return time() - lastTrack(getUserId(name, db), "car", db) >= 10*24*60*60*1000;
 	}, "streak silver", "10 days no car", "data/icons/silver_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
-		return lastTrack(getUserId(name, db), "bike", db) >= 20*24*60*60*1000;
+		return time() - lastTrack(getUserId(name, db), "car", db) >= 20*24*60*60*1000;
 	}, "streak gold", "20 days no car", "data/icons/gold_bike.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
-		return lastTrack(getUserId(name, db), "bike", db) >= (unsigned long long)(50)*24*60*60*1000;
+		return time() - lastTrack(getUserId(name, db), "car", db) >= (unsigned long long)(50)*24*60*60*1000;
 	}, "streak platin", "50 days no car", "data/icons/platin_bike.png")
 };
 
@@ -151,7 +157,7 @@ float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db){
 unsigned long long lastTrack(int userId, std::string vehicle, Sqlite3DB *db){
 	if(userId > 0){
 		std::stringstream querry;
-		querry<<"SELECT max(date) FROM tracks_"<<userId<<" GROUP BY vehicle;";
+		querry<<"SELECT vehicle,max(date) FROM tracks_"<<userId<<" GROUP BY vehicle;";
 		dbResult *result = db->exec(querry.str());
 		for(unsigned i = 0; i < result->data.size(); i++){
 			if(std::string(result->data[i][0]) == vehicle){
@@ -262,6 +268,7 @@ HttpResponse getStats(PluginArg arg){
 		float dist = calcDist(userId, str, db);
 		cJSON_AddNumberToObject(result, str.c_str(), dist);
 	}
+	cJSON_AddNumberToObject(result, "score", calcScore(userId, db));
 
 	const char *data = cJSON_Print(result);
 	cJSON_Delete(result);
@@ -308,9 +315,10 @@ HttpResponse postTrack(PluginArg arg){
 	if(checkUser(userName, password, db)){
 		int id = getUserId(userName, db);
 		std::stringstream querry;
-		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle, date) VALUES ("<<distance<<", \'"<<vehicle<<" \',"<<time(NULL)<<");";
+		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle, date) VALUES ("<<distance<<", \'"<<vehicle<<" \',"<<time()<<");";
 		dbResult *result = db->exec(querry.str());
 		delete result;
+
 		float score = calcScore(id, db);
 		querry.str("");
 		querry<<"UPDATE users SET score = "<<score<<" WHERE name LIKE \'"<<userName<<"\';";
@@ -338,6 +346,7 @@ HttpResponse getToplist(PluginArg arg){
 	for(std::string *row : result->data){
 		std::string name = row[0];
 		float score = strtof(row[1].c_str(), nullptr);
+
 		cJSON *entry = cJSON_CreateObject();
 		cJSON_AddNumberToObject(entry, "rank", rank);
 		cJSON_AddNumberToObject(entry, "score", score);
