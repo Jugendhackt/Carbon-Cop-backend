@@ -246,6 +246,8 @@ Plugin newPlugin(std::string name, int requestType, std::string subUrl, std::fun
 bool comparePlugin(Plugin p1, Plugin p2){
 	int c1 = std::count(p1.subUrl.begin(), p1.subUrl.end(), '/');
 	int c2 = std::count(p2.subUrl.begin(), p2.subUrl.end(), '/');
+	if(c1 == c2)
+		return p1.subUrl.length() > p2.subUrl.length();
 	return c1 > c2;
 }
 

@@ -1,10 +1,26 @@
 [
 	{
+		"name":"login",
+		"dll":"build/plugin.so",
+		"function":"login",
+		"method":"POST",
+		"suburl":"/login",
+		"requirements":"build/default.so"
+	},
+	{
 		"name":"signup",
 		"dll":"build/plugin.so",
 		"function":"signup",
 		"method":"POST",
-		"suburl":"/signup/",
+		"suburl":"/signup",
+		"requirements":"build/default.so"
+	},
+	{
+		"name":"post track",
+		"dll":"build/plugin.so",
+		"function":"postTrack",
+		"method":"POST",
+		"suburl":"/tracks",
 		"requirements":"build/default.so"
 	}
 ]
