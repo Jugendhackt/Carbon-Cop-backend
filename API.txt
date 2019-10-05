@@ -55,3 +55,4 @@ DB:
 	-tracks:		(per user: tracks_userid)
 		-distance
 		-vehicle
+		-date

@@ -1,10 +1,10 @@
 [
 	{
-		"name":"my plugin",
+		"name":"signup",
 		"dll":"build/plugin.so",
-		"function":"plugin",
-		"method":"GET",
-		"suburl":"/plugin",
+		"function":"signup",
+		"method":"POST",
+		"suburl":"/signup/",
 		"requirements":"build/default.so"
 	}
 ]

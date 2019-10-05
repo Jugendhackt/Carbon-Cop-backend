@@ -318,6 +318,7 @@ bool File::isOpen(){
 Sqlite3DB::Sqlite3DB(std::string fileName)
 {
 	sqlite3_open(fileName.data(), &db);
+	std::cout<<"opened: "<<fileName<<" "<<db<<"\n";
 }
 
 Sqlite3DB::~Sqlite3DB()
