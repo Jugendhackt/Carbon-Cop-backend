@@ -4,7 +4,7 @@
 		"dll":"build/plugin.so",
 		"function":"plugin",
 		"method":"GET",
-		"suburl":"/plugin/",
+		"suburl":"/plugin",
 		"requirements":"build/default.so"
 	}
 ]
