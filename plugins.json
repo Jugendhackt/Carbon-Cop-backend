@@ -30,5 +30,13 @@
 		"method":"POST",
 		"suburl":"/tracks",
 		"requirements":"build/default.so"
+	},
+	{
+		"name":"challenges",
+		"dll":"build/plugin.so",
+		"function":"getChallenges",
+		"method":"GET",
+		"suburl":"/challenges",
+		"requirements":"build/default.so"
 	}
 ]

@@ -4,6 +4,11 @@ API:
 		-forbidden(wrong userame / password)
 		-internal error
 
+	-achievment:
+		-name
+		-description
+		-link to image
+
 	-create user:
 		-recv:
 			-username
@@ -28,12 +33,9 @@ API:
 	-get badgets:
 		-recv:
 			-username
-			-password
 		-send:
 			-fail /
-			-list of badgets:
-				-name
-				-description
+			-list of achievments
 
 	-post track:
 		-recv:

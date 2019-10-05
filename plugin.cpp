@@ -1,5 +1,139 @@
 #include "plugin.hpp"
 
+
+
+Challenge::Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std::string name, std::string description, std::string icon){
+	this->name = name;
+	this->description = description;
+	this->icon = icon;
+	this->unlocked = unlocked;
+}
+
+bool Challenge::isunlocked(std::string name, Sqlite3DB *db){
+	return unlocked(name, db);
+}
+
+cJSON* Challenge::toJson(){
+	cJSON *json = cJSON_CreateObject();
+	cJSON_AddStringToObject(json, "name", name.c_str());
+	cJSON_AddStringToObject(json, "description", description.c_str());
+	cJSON_AddStringToObject(json, "icon", icon.c_str());
+	return json;
+}
+
+std::vector<Challenge> challenges = {
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "foot", db) >= 5;
+	}, "walking bronze", "walk for 5 km", "data/bronze.png"),
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "foot", db) >= 42.195;
+	}, "marathon", "walk a marathon", "data/marathon.png"),
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "foot", db) >= 50;
+	}, "walking silver", "walk for 50 km", "data/silver.png"),
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "foot", db) >= 100;
+	}, "walking gold", "walk for 100 km", "data/gold.png"),
+	
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "foot", db) >= 500;
+	}, "walking platin", "walk for 500 km", "data/platin.png"),
+
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "bike", db) >= 5;
+	}, "biking bronze", "ride a bike for 5 km", "data/bronze.png"),
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "bike", db) >= 50;
+	}, "biking silver", "ride a bike for 50 km", "data/silver.png"),
+
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "bike", db) >= 100;
+	}, "biking gold", "ride a bike for 100 km", "data/gold.png"),
+	
+	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
+		return calcDist(getUserId(name, db), "bike", db) >= 500;
+	}, "biking platin", "ride a bike for 500 km", "data/platin.png")
+};
+
+bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
+	std::stringstream querry;
+	querry<<"SELECT password FROM users WHERE name LIKE \'"<<userName<<"\';";
+	dbResult *result = db->exec(querry.str());
+	if(result->data.size() > 0 && result->columns > 0){
+		if(result->data[0][0] == password){
+			delete result;
+			return true;
+		}
+		delete result;
+		return false;
+	}
+	delete result;
+	return false;
+}
+
+int getUserId(std::string userName, Sqlite3DB *db){
+	std::stringstream querry;
+	querry<<"SELECT id FROM users WHERE name LIKE \'"<<userName<<"\'";
+	dbResult *result = db->exec(querry.str());
+	if(result->data.size() > 0 && result->columns > 0){
+		std::string strid = result->data[0][0];
+		delete result;
+		return atoi(strid.c_str());
+	}
+	delete result;
+	return -1;
+}
+
+
+float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
+	std::stringstream querry;
+	querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
+	dbResult *result = db->exec(querry.str());
+	for(int i = 0; i < result->data.size(); i++){
+		if(std::string(result->data[i][0]) == vehicle){
+			float val = strtof(result->data[i][1].c_str(), nullptr);
+			delete result;
+			return val;
+		}
+	}
+	delete result;
+	return 0;
+}
+
+float calcScore(int userId, Sqlite3DB *db){
+	float score = 	calcDist(userId, "bike", db)  * 10 + 
+					calcDist(userId, "bus", db)   *  3 + 
+					calcDist(userId, "car", db)   * -3 + 
+					calcDist(userId, "plane", db) * -10 + 
+					calcDist(userId, "train", db) *  1.5;
+
+	return score;
+}
+
+float calcCO2(float dist, std::string vehicle){
+	float co2 = 0.0f;
+	if(vehicle == "bike") co2 = 0.0f;
+	else if(vehicle == "bus") co2 = 20.0f;
+	else if(vehicle == "car") co2 = 150.0f;
+	else if(vehicle == "plane") co2 = 380.0f;
+	else if(vehicle == "train") co2 = 40.0f;
+
+	return dist * co2;
+}
+
+float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db){
+	int userId = getUserId(userName, db);
+	return calcCO2(calcDist(userId, vehicle, db), vehicle);
+}
+
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+
 HttpResponse login(PluginArg arg){
 	std::string payload = arg.client->socket->recv(arg.payloadSize);
 
@@ -161,6 +295,30 @@ HttpResponse getToplist(PluginArg arg){
 	
 	delete result;
 	const char *data = cJSON_Print(root);
+	cJSON_Delete(root);
+	std::string json = data;
+	delete data;
+	return {200, "application/json", json};
+}
+
+HttpResponse getChallenges(PluginArg arg){
+	std::string url = arg.url;
+	std::string name(url.begin() + url.rfind("?") + 1, url.end());
+	name = std::string(name.begin() + name.rfind("name=") + 5, name.end());
+
+	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
+
+	cJSON *result = cJSON_CreateObject();
+	cJSON *list = cJSON_AddArrayToObject(result, "challenges");
+
+	for(Challenge &c : challenges){
+		if(c.isunlocked(name, db)){
+			cJSON_AddItemToArray(list, c.toJson());
+		}
+	}
+
+	const char *data = cJSON_Print(result);
+	cJSON_Delete(result);
 	std::string json = data;
 	delete data;
 	return {200, "application/json", json};
@@ -173,79 +331,4 @@ void __attribute__ ((constructor)) initPlugin(){
 
 void __attribute__ ((destructor)) clean(){
 	;
-}
-
-
-
-
-bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
-	std::stringstream querry;
-	querry<<"SELECT password FROM users WHERE name LIKE \'"<<userName<<"\';";
-	dbResult *result = db->exec(querry.str());
-	if(result->data.size() > 0 && result->columns > 0){
-		if(result->data[0][0] == password){
-			delete result;
-			return true;
-		}
-		delete result;
-		return false;
-	}
-	delete result;
-	return false;
-}
-
-int getUserId(std::string userName, Sqlite3DB *db){
-	std::stringstream querry;
-	querry<<"SELECT id FROM users WHERE name LIKE \'"<<userName<<"\'";
-	dbResult *result = db->exec(querry.str());
-	if(result->data.size() > 0 && result->columns > 0){
-		std::string strid = result->data[0][0];
-		delete result;
-		return atoi(strid.c_str());
-	}
-	delete result;
-	return -1;
-}
-
-
-float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
-	std::stringstream querry;
-	querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
-	dbResult *result = db->exec(querry.str());
-	for(int i = 0; i < result->data.size(); i++){
-		if(std::string(result->data[i][0]) == vehicle){
-			std::cout<<vehicle<<": "<<result->data[i][1]<<"\n";
-			float val = strtof(result->data[i][1].c_str(), nullptr);
-			delete result;
-			return val;
-		}
-	}
-	delete result;
-	return 0;
-}
-
-float calcScore(int userId, Sqlite3DB *db){
-	float score = 	calcDist(userId, "bike", db)  * 10 + 
-					calcDist(userId, "bus", db)   *  3 + 
-					calcDist(userId, "car", db)   * -3 + 
-					calcDist(userId, "plane", db) * -10 + 
-					calcDist(userId, "train", db) *  1.5;
-
-	return score;
-}
-
-float calcCO2(float dist, std::string vehicle){
-	float co2 = 0.0f;
-	if(vehicle == "bike") co2 = 0.0f;
-	else if(vehicle == "bus") co2 = 20.0f;
-	else if(vehicle == "car") co2 = 150.0f;
-	else if(vehicle == "plane") co2 = 380.0f;
-	else if(vehicle == "train") co2 = 40.0f;
-
-	return dist * co2;
-}
-
-float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db){
-	int userId = getUserId(userName, db);
-	return calcCO2(calcDist(userId, vehicle, db), vehicle);
 }
