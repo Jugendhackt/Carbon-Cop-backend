@@ -1,0 +1,57 @@
+
+API:	
+	-fail:
+		-forbidden(wrong userame / password)
+		-internal error
+
+	-create user:
+		-recv:
+			-username
+			-password
+		-send:
+			-already exists /
+			-success
+		-does:
+			-add user to DB/users if not exists
+			-create table "tracks_userid"
+
+	-get scores:
+		-recv:
+			-badget:
+				-name
+		-send:
+			-list of scores:
+				-count
+				-username
+				-rank
+
+	-get badgets:
+		-recv:
+			-username
+			-password
+		-send:
+			-fail /
+			-list of badgets:
+				-name
+				-description
+
+	-post track:
+		-recv:
+			-username
+			-password
+			-distance
+			-vehicle
+		-send:
+			-success /
+			-fail
+
+DB:
+	-users:
+		-id
+		-username
+		-password
+		-count bagdet x
+	
+	-tracks:		(per user: tracks_userid)
+		-distance
+		-vehicle
