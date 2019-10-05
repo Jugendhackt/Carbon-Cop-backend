@@ -1,5 +1,13 @@
 [
 	{
+		"name":"get toplist",
+		"dll":"build/plugin.so",
+		"function":"getToplist",
+		"method":"GET",
+		"suburl":"/top",
+		"requirements":"build/default.so"
+	},
+	{
 		"name":"login",
 		"dll":"build/plugin.so",
 		"function":"login",

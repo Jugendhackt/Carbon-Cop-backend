@@ -17,8 +17,8 @@ API:
 
 	-get scores:
 		-recv:
-			-badget:
-				-name
+			-vehicle /
+			-nothing
 		-send:
 			-list of scores:
 				-count

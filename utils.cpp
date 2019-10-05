@@ -86,7 +86,7 @@ std::vector<std::string> getDirContent(std::string path)
 	}
 	return  entrys;
 }
-/*
+
 namespace sys {
 	static unsigned long long lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle;
 	static clock_t lastCPU, lastSysCPU, lastUserCPU;
@@ -226,7 +226,7 @@ namespace sys {
 		return result.c_str();
 	}
 }
-*/
+
 File::File(std::string fileName){
 	this->fileName = fileName;
 }
@@ -547,8 +547,7 @@ logfile::~logfile(){
 	f.close();
 }
 logfile& logfile::operator<<(std::string str){
-	//f<<"["<<sys::getTimeStr()<<"]";
-	f<<"["<<name<<"]\t\""<<str<<"\" || \""<<stringToHex(str, true)<<"\"\n";
+	f<<"["<<sys::getTimeStr()<<"]["<<name<<"]\t\""<<str<<"\" || \""<<stringToHex(str, true)<<"\"\n";
 	f.flush();
 	return *this;
 }

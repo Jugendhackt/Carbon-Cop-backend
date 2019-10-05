@@ -3,7 +3,7 @@
 
 int main()
 {
-	//sys::init();
+	sys::init();
 	HttpServer *server = new HttpServer();
 	Sqlite3DB *db = new Sqlite3DB("./data/main.db3");
 	server->loadPlugins("./plugins.json", db);
