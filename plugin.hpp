@@ -1,10 +1,10 @@
 #include <string>
 #include <time.h>
+#include <algorithm>
 #include <functional>
 
 #include "utils.hpp"
 #include "httpServer.hpp"
-
 
 class Challenge{
 public:

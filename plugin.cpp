@@ -1,7 +1,6 @@
 #include "plugin.hpp"
 
 
-
 Challenge::Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std::string name, std::string description, std::string icon){
 	this->name = name;
 	this->description = description;
@@ -92,21 +91,24 @@ int getUserId(std::string userName, Sqlite3DB *db){
 
 float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
 	std::stringstream querry;
-	querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
-	dbResult *result = db->exec(querry.str());
-	for(int i = 0; i < result->data.size(); i++){
-		if(std::string(result->data[i][0]) == vehicle){
-			float val = strtof(result->data[i][1].c_str(), nullptr);
-			delete result;
-			return val;
+	if(userId > 0){
+		querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
+		dbResult *result = db->exec(querry.str());
+		for(int i = 0; i < result->data.size(); i++){
+			if(std::string(result->data[i][0]) == vehicle){
+				float val = strtof(result->data[i][1].c_str(), nullptr);
+				delete result;
+				return val;
+			}
 		}
+		delete result;
 	}
-	delete result;
 	return 0;
 }
 
 float calcScore(int userId, Sqlite3DB *db){
-	float score = 	calcDist(userId, "bike", db)  * 10 + 
+	float score = 	calcDist(userId, "foot", db)  * 10 + 
+					calcDist(userId, "bike", db)  * 10 + 
 					calcDist(userId, "bus", db)   *  3 + 
 					calcDist(userId, "car", db)   * -3 + 
 					calcDist(userId, "plane", db) * -10 + 
@@ -117,7 +119,8 @@ float calcScore(int userId, Sqlite3DB *db){
 
 float calcCO2(float dist, std::string vehicle){
 	float co2 = 0.0f;
-	if(vehicle == "bike") co2 = 0.0f;
+	if(vehicle == "foot") co2 = 0.0f;
+	else if(vehicle == "bike") co2 = 0.0f;
 	else if(vehicle == "bus") co2 = 20.0f;
 	else if(vehicle == "car") co2 = 150.0f;
 	else if(vehicle == "plane") co2 = 380.0f;
@@ -303,8 +306,7 @@ HttpResponse getToplist(PluginArg arg){
 
 HttpResponse getChallenges(PluginArg arg){
 	std::string url = arg.url;
-	std::string name(url.begin() + url.rfind("?") + 1, url.end());
-	name = std::string(name.begin() + name.rfind("name=") + 5, name.end());
+	std::string name(url.begin() + std::min(url.rfind("?name="), url.length()-7) + 6, url.end());
 
 	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
 
