@@ -23,40 +23,40 @@ cJSON* Challenge::toJson(){
 std::vector<Challenge> challenges = {
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 5;
-	}, "walking bronze", "walk for 5 km", "data/bronze.png"),
+	}, "walking bronze", "walk for 5 km", "data/icons/bronze_walk.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 42.195;
-	}, "marathon", "walk a marathon", "data/marathon.png"),
+	}, "marathon", "walk a marathon", "data/icons/marathon.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 50;
-	}, "walking silver", "walk for 50 km", "data/silver.png"),
+	}, "walking silver", "walk for 50 km", "data/icons/silver_walk.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 100;
-	}, "walking gold", "walk for 100 km", "data/gold.png"),
+	}, "walking gold", "walk for 100 km", "data/icons/gold_walk.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 500;
-	}, "walking platin", "walk for 500 km", "data/platin.png"),
+	}, "walking platin", "walk for 500 km", "data/icons/platin_walk.png"),
 
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 5;
-	}, "biking bronze", "ride a bike for 5 km", "data/bronze.png"),
+	}, "biking bronze", "ride a bike for 5 km", "data/icons/bronze_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 50;
-	}, "biking silver", "ride a bike for 50 km", "data/silver.png"),
+	}, "biking silver", "ride a bike for 50 km", "data/icons/silver_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 100;
-	}, "biking gold", "ride a bike for 100 km", "data/gold.png"),
+	}, "biking gold", "ride a bike for 100 km", "data/icons/gold_bike.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 500;
-	}, "biking platin", "ride a bike for 500 km", "data/platin.png")
+	}, "biking platin", "ride a bike for 500 km", "data/icons/platin_bike.png")
 };
 
 bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
@@ -107,7 +107,7 @@ float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
 }
 
 float calcScore(int userId, Sqlite3DB *db){
-	float score = 	calcDist(userId, "foot", db)  * 10 + 
+	float score = 	calcDist(userId, "walk", db)  * 10 + 
 					calcDist(userId, "bike", db)  * 10 + 
 					calcDist(userId, "bus", db)   *  3 + 
 					calcDist(userId, "car", db)   * -3 + 
@@ -119,7 +119,7 @@ float calcScore(int userId, Sqlite3DB *db){
 
 float calcCO2(float dist, std::string vehicle){
 	float co2 = 0.0f;
-	if(vehicle == "foot") co2 = 0.0f;
+	if(vehicle == "walk") co2 = 0.0f;
 	else if(vehicle == "bike") co2 = 0.0f;
 	else if(vehicle == "bus") co2 = 20.0f;
 	else if(vehicle == "car") co2 = 150.0f;
@@ -216,6 +216,27 @@ HttpResponse signup(PluginArg arg){
 
 	delete result;
 	return {200, "application/json", "{\"status\":\"signup succsessful\"}"};
+}
+
+HttpResponse getStats(PluginArg arg){
+	std::string url = arg.url;
+	std::string name(url.begin() + std::min(url.rfind("?name="), url.length()-7) + 6, url.end());
+
+	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
+
+	cJSON *result = cJSON_CreateObject();
+
+	int userId = getUserId(name, db);
+	for(std::string str : {"walk", "bike", "bus", "car", "plane", "train"}){
+		float dist = calcDist(userId, str, db);
+		cJSON_AddNumberToObject(result, str.c_str(), dist);
+	}
+
+	const char *data = cJSON_Print(result);
+	cJSON_Delete(result);
+	std::string json = data;
+	delete data;
+	return {200, "application/json", json};
 }
 
 HttpResponse postTrack(PluginArg arg){

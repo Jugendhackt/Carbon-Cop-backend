@@ -16,6 +16,14 @@
 		"requirements":"build/default.so"
 	},
 	{
+		"name":"get stats",
+		"dll":"build/plugin.so",
+		"function":"getStats",
+		"method":"GET",
+		"suburl":"/stats",
+		"requirements":"build/default.so"
+	},
+	{
 		"name":"signup",
 		"dll":"build/plugin.so",
 		"function":"signup",

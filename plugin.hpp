@@ -31,6 +31,7 @@ float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db);
 extern "C"{
 	HttpResponse login(PluginArg arg);
 	HttpResponse signup(PluginArg arg);
+	HttpResponse getStats(PluginArg arg);
 	HttpResponse postTrack(PluginArg arg);
 	HttpResponse getToplist(PluginArg arg);
 	HttpResponse getChallenges(PluginArg arg);
