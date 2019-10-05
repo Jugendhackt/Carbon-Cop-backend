@@ -10,10 +10,12 @@ Challenge::Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std:
 
 cJSON* Challenge::toJson(std::string name, Sqlite3DB *db){
 	cJSON *json = cJSON_CreateObject();
+	
 	cJSON_AddStringToObject(json, "name", this->name.c_str());
 	cJSON_AddStringToObject(json, "description", description.c_str());
 	cJSON_AddStringToObject(json, "icon", icon.c_str());
 	cJSON_AddNumberToObject(json, "unlocked", int(unlocked(name, db)));
+
 	return json;
 }
 
@@ -83,16 +85,14 @@ bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
 	std::stringstream querry;
 	querry<<"SELECT password FROM users WHERE name LIKE \'"<<userName<<"\';";
 	dbResult *result = db->exec(querry.str());
+	bool valid = false;
 	if(result->data.size() > 0 && result->columns > 0){
 		if(result->data[0][0] == password){
-			delete result;
-			return true;
+			valid = true;
 		}
-		delete result;
-		return false;
 	}
 	delete result;
-	return false;
+	return valid;
 }
 
 int getUserId(std::string userName, Sqlite3DB *db){
@@ -238,12 +238,14 @@ HttpResponse signup(PluginArg arg){
 		querry.str("");
 		querry<<"INSERT INTO users (name, password, score) VALUES (\'"<<userName<<"\', \'"<<password<<"\', 0.0);";
 		delete result;
+
 		result = db->exec(querry.str());
 		int userId = result->rowId;
+		delete result;
+
 		querry.str("");
 		querry<<"BEGIN TRANSACTION;CREATE TABLE IF NOT EXISTS \"tracks_"<<userId<<"\"";
 		querry<<"(\"distance\" REAL, \"vehicle\" TEXT, \"date\"	INTEGER);COMMIT;";
-		delete result;
 		result = db->exec(querry.str());
 	}
 	else{
@@ -348,12 +350,11 @@ HttpResponse getToplist(PluginArg arg){
 		float score = strtof(row[1].c_str(), nullptr);
 
 		cJSON *entry = cJSON_CreateObject();
-		cJSON_AddNumberToObject(entry, "rank", rank);
+		cJSON_AddNumberToObject(entry, "rank", rank++);
 		cJSON_AddNumberToObject(entry, "score", score);
 		cJSON_AddStringToObject(entry, "name", name.c_str());
 
 		cJSON_AddItemToArray(toplist, entry);
-		rank += 1;
 	}
 	
 	delete result;
