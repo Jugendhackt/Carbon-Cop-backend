@@ -1,0 +1,10 @@
+[
+	{
+		"name":"my plugin",
+		"dll":"build/plugin.so",
+		"function":"plugin",
+		"method":"GET",
+		"suburl":"/plugin/",
+		"requirements":"build/default.so"
+	}
+]

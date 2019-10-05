@@ -1,0 +1,9 @@
+data
+*.sublime*
+server
+*.o
+*.so
+*.txt
+*.crt
+*.key
+*.pem
