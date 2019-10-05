@@ -93,28 +93,34 @@ namespace sys {
 	static int numProcessors;
 	
 	long long getTotalMem(){
+		/*
 		struct sysinfo memInfo;
 		sysinfo (&memInfo);
 		long long totalPhysMem = memInfo.totalram;
 		//Multiply in next statement to avoid int overflow on right hand side...
 		totalPhysMem *= memInfo.mem_unit;
 		return totalPhysMem;
+		*/
 	}
 	long long getUsedMem(){
+		/*
 		struct sysinfo memInfo;
 		sysinfo (&memInfo);
 		long long physMemUsed = memInfo.totalram - memInfo.freeram;
 		//Multiply in next statement to avoid int overflow on right hand side...
 		physMemUsed *= memInfo.mem_unit;
 		return physMemUsed;
+		*/
 	}
 	long long getFreeMem(){
+		/*
 		struct sysinfo memInfo;
 		sysinfo (&memInfo);
 		long long physMemFree = memInfo.freeram;
 		//Multiply in next statement to avoid int overflow on right hand side...
 		physMemFree *= memInfo.mem_unit;
 		return physMemFree;
+		*/
 	}
 	long long getCurrentMem(){
 		FILE* file = fopen("/proc/self/status", "r");

@@ -7,8 +7,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/sysinfo.h>
-#include <sys/times.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
