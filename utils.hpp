@@ -7,6 +7,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+/*
+#include <sys/sysinfo.h>
+#include <sys/times.h>
+*/
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
@@ -45,7 +49,7 @@ std::string stringFromHex(std::string hex);
 
 std::string getDate();
 std::vector<std::string> getDirContent(std::string path);
-
+/*
 namespace sys {
 	long long getTotalMem();
 	long long getUsedMem();
@@ -59,7 +63,7 @@ namespace sys {
 
 	std::string getTimeStr();
 }
-
+*/
 class File{
 public:
 	File(std::string fileName = "");
