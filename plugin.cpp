@@ -8,15 +8,12 @@ Challenge::Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std:
 	this->unlocked = unlocked;
 }
 
-bool Challenge::isunlocked(std::string name, Sqlite3DB *db){
-	return unlocked(name, db);
-}
-
-cJSON* Challenge::toJson(){
+cJSON* Challenge::toJson(std::string name, Sqlite3DB *db){
 	cJSON *json = cJSON_CreateObject();
 	cJSON_AddStringToObject(json, "name", name.c_str());
 	cJSON_AddStringToObject(json, "description", description.c_str());
 	cJSON_AddStringToObject(json, "icon", icon.c_str());
+	cJSON_AddNumberToObject(json, "unlocked", int(unlocked(name, db)));
 	return json;
 }
 
@@ -335,9 +332,7 @@ HttpResponse getChallenges(PluginArg arg){
 	cJSON *list = cJSON_AddArrayToObject(result, "challenges");
 
 	for(Challenge &c : challenges){
-		if(c.isunlocked(name, db)){
-			cJSON_AddItemToArray(list, c.toJson());
-		}
+		cJSON_AddItemToArray(list, c.toJson(name, db));
 	}
 
 	const char *data = cJSON_Print(result);

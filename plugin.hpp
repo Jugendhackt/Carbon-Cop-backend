@@ -9,8 +9,7 @@
 class Challenge{
 public:
 	Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std::string name = "", std::string description = "", std::string icon = "");
-	bool isunlocked(std::string name, Sqlite3DB *db);
-	cJSON* toJson();
+	cJSON* toJson(std::string name, Sqlite3DB *db);
 
 private:
 	std::string name;
