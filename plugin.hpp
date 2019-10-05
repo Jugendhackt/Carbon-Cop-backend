@@ -25,6 +25,7 @@ float calcDist(int userId, std::string vehicle, Sqlite3DB *db);
 float calcScore(int userId, Sqlite3DB *db);
 float calcCO2(float dist, std::string vehicle);
 float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db);
+unsigned long long lastTrack(int userId, std::string vehicle, Sqlite3DB *db);
 
 
 extern "C"{
