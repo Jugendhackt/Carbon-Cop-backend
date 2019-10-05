@@ -68,7 +68,7 @@ HttpResponse signup(PluginArg arg){
 		int userId = result->rowId;
 		querry.str("");
 		querry<<"BEGIN TRANSACTION;CREATE TABLE IF NOT EXISTS \"tracks_"<<userId<<"\"";
-		querry<<"(\"distance\" REAL, \"vehicle\" TEXT, \"date\"	DATE);COMMIT;";
+		querry<<"(\"distance\" REAL, \"vehicle\" TEXT, \"date\"	INTEGER);COMMIT;";
 		delete result;
 		result = db->exec(querry.str());
 	}
@@ -119,7 +119,7 @@ HttpResponse postTrack(PluginArg arg){
 	if(checkUser(userName, password, db)){
 		int id = getUserId(userName, db);
 		std::stringstream querry;
-		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle) VALUES ("<<distance<<", \'"<<vehicle<<" \');";
+		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle, date) VALUES ("<<distance<<", \'"<<vehicle<<" \',"<<time(NULL)<<");";
 		dbResult *result = db->exec(querry.str());
 		delete result;
 		float score = calcScore(id, db);
