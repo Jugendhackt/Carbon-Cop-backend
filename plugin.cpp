@@ -116,7 +116,7 @@ float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
 		querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
 		dbResult *result = db->exec(querry.str());
 		for(unsigned i = 0; i < result->data.size(); i++){
-			if(std::string(result->data[i][0]) == vehicle){
+			if(stringFromHex(result->data[i][0]) == vehicle){
 				val = strtof(result->data[i][1].c_str(), nullptr);
 				break;
 			}
