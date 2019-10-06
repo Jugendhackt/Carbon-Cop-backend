@@ -10,7 +10,7 @@ Challenge::Challenge(std::function<bool(std::string, Sqlite3DB*)> unlocked, std:
 
 cJSON* Challenge::toJson(std::string name, Sqlite3DB *db){
 	cJSON *json = cJSON_CreateObject();
-	
+
 	cJSON_AddStringToObject(json, "name", this->name.c_str());
 	cJSON_AddStringToObject(json, "description", description.c_str());
 	cJSON_AddStringToObject(json, "icon", icon.c_str());
@@ -151,7 +151,8 @@ float calcCO2(float dist, std::string vehicle){
 
 float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db){
 	int userId = getUserId(userName, db);
-	return calcCO2(calcDist(userId, vehicle, db), vehicle);
+	float dist = calcDist(userId, vehicle, db);
+	return calcCO2(dist, vehicle);
 }
 
 unsigned long long lastTrack(int userId, std::string vehicle, Sqlite3DB *db){
