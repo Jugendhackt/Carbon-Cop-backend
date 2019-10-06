@@ -87,7 +87,7 @@ bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
 	dbResult *result = db->exec(querry.str());
 	bool valid = false;
 	if(result->data.size() > 0 && result->columns > 0){
-		if(result->data[0][0] == password){
+		if(stringFromHex(result->data[0][0]) == password){
 			valid = true;
 		}
 	}
