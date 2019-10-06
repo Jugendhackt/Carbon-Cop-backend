@@ -191,7 +191,7 @@ HttpResponse defaultGet(PluginArg arg){
 		}
 		else{
 			if(file.open("rb")){
-				if(file.size() > 1024*1024){
+				if(file.size() > 1024*1024*50){
 					getBigFile(&file, arg.client->socket, arg.server);
 					content = "";
 					status = -1;
