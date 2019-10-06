@@ -28,57 +28,57 @@ unsigned long long time(){
 std::vector<Challenge> challenges = {
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 5;
-	}, "walking bronze", "walk for 5 km", "data/icons/bronze_walk.png"),
+	}, "walking bronze", "walk for 5 km", "icons/bronze_walk.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 42.195;
-	}, "marathon", "walk a marathon", "data/icons/marathon.png"),
+	}, "marathon", "walk a marathon", "icons/marathon.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 50;
-	}, "walking silver", "walk for 50 km", "data/icons/silver_walk.png"),
+	}, "walking silver", "walk for 50 km", "icons/silver_walk.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 100;
-	}, "walking gold", "walk for 100 km", "data/icons/gold_walk.png"),
+	}, "walking gold", "walk for 100 km", "icons/gold_walk.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "foot", db) >= 500;
-	}, "walking platin", "walk for 500 km", "data/icons/platin_walk.png"),
+	}, "walking platin", "walk for 500 km", "icons/platin_walk.png"),
 
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 5;
-	}, "biking bronze", "ride a bike for 5 km", "data/icons/bronze_bike.png"),
+	}, "biking bronze", "ride a bike for 5 km", "icons/bronze_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 50;
-	}, "biking silver", "ride a bike for 50 km", "data/icons/silver_bike.png"),
+	}, "biking silver", "ride a bike for 50 km", "icons/silver_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 100;
-	}, "biking gold", "ride a bike for 100 km", "data/icons/gold_bike.png"),
+	}, "biking gold", "ride a bike for 100 km", "icons/gold_bike.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return calcDist(getUserId(name, db), "bike", db) >= 500;
-	}, "biking platin", "ride a bike for 500 km", "data/icons/platin_bike.png"),
+	}, "biking platin", "ride a bike for 500 km", "icons/platin_bike.png"),
 
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return time() - lastTrack(getUserId(name, db), "car", db) >= 5*24*60*60*1000;
-	}, "streak bronze", "5 days no car", "data/icons/bronze_bike.png"),
+	}, "streak bronze", "5 days no car", "icons/bronze_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return time() - lastTrack(getUserId(name, db), "car", db) >= 10*24*60*60*1000;
-	}, "streak silver", "10 days no car", "data/icons/silver_bike.png"),
+	}, "streak silver", "10 days no car", "icons/silver_bike.png"),
 
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return time() - lastTrack(getUserId(name, db), "car", db) >= 20*24*60*60*1000;
-	}, "streak gold", "20 days no car", "data/icons/gold_bike.png"),
+	}, "streak gold", "20 days no car", "icons/gold_bike.png"),
 	
 	Challenge([&](std::string name, Sqlite3DB *db) -> bool {
 		return time() - lastTrack(getUserId(name, db), "car", db) >= (unsigned long long)(50)*24*60*60*1000;
-	}, "streak platin", "50 days no car", "data/icons/platin_bike.png")
+	}, "streak platin", "50 days no car", "icons/platin_bike.png")
 };
 
 bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
