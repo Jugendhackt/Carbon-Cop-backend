@@ -345,7 +345,7 @@ HttpResponse getToplist(PluginArg arg){
 	
 	int rank = 1;
 	for(std::string *row : result->data){
-		std::string name = row[0];
+		std::string name = stringFromHex(row[0]);
 		float score = strtof(row[1].c_str(), nullptr);
 
 		cJSON *entry = cJSON_CreateObject();
