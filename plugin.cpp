@@ -83,7 +83,7 @@ std::vector<Challenge> challenges = {
 
 bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
 	std::stringstream querry;
-	querry<<"SELECT password FROM users WHERE name LIKE \'"<<userName<<"\';";
+	querry<<"SELECT password FROM users WHERE name LIKE \'"<<stringToHex(userName)<<"\';";
 	dbResult *result = db->exec(querry.str());
 	bool valid = false;
 	if(result->data.size() > 0 && result->columns > 0){
@@ -97,7 +97,7 @@ bool checkUser(std::string userName, std::string password, Sqlite3DB *db){
 
 int getUserId(std::string userName, Sqlite3DB *db){
 	std::stringstream querry;
-	querry<<"SELECT id FROM users WHERE name LIKE \'"<<userName<<"\'";
+	querry<<"SELECT id FROM users WHERE name LIKE \'"<<stringToHex(userName)<<"\'";
 	dbResult *result = db->exec(querry.str());
 	if(result->data.size() > 0 && result->columns > 0){
 		std::string strid = result->data[0][0];
@@ -110,20 +110,20 @@ int getUserId(std::string userName, Sqlite3DB *db){
 
 
 float calcDist(int userId, std::string vehicle, Sqlite3DB *db){
+	float val = 0;
 	if(userId > 0){
 		std::stringstream querry;
 		querry<<"SELECT vehicle,sum(distance) FROM tracks_"<<userId<<" GROUP BY vehicle;";
 		dbResult *result = db->exec(querry.str());
 		for(unsigned i = 0; i < result->data.size(); i++){
 			if(std::string(result->data[i][0]) == vehicle){
-				float val = strtof(result->data[i][1].c_str(), nullptr);
-				delete result;
-				return val;
+				val = strtof(result->data[i][1].c_str(), nullptr);
+				break;
 			}
 		}
 		delete result;
 	}
-	return 0;
+	return val;
 }
 
 float calcScore(int userId, Sqlite3DB *db){
@@ -156,20 +156,20 @@ float calcCO2(std::string userName, std::string vehicle, Sqlite3DB *db){
 }
 
 unsigned long long lastTrack(int userId, std::string vehicle, Sqlite3DB *db){
+	unsigned long long val = 0;
 	if(userId > 0){
 		std::stringstream querry;
 		querry<<"SELECT vehicle,max(date) FROM tracks_"<<userId<<" GROUP BY vehicle;";
 		dbResult *result = db->exec(querry.str());
 		for(unsigned i = 0; i < result->data.size(); i++){
 			if(std::string(result->data[i][0]) == vehicle){
-				unsigned long long val = std::stoull(result->data[i][1].c_str(), nullptr, 0);
-				delete result;
-				return val;
+				val = std::stoull(result->data[i][1].c_str(), nullptr, 0);
+				break;
 			}
 		}
 		delete result;
 	}
-	return 0;
+	return val;
 }
 
 //////////////////////////////////////////////
@@ -232,12 +232,12 @@ HttpResponse signup(PluginArg arg){
 	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
 
 	std::stringstream querry;
-	querry<<"SELECT name FROM users WHERE name LIKE \'"<<userName<<"\';";
+	querry<<"SELECT name FROM users WHERE name LIKE \'"<<stringToHex(userName)<<"\';";
 	dbResult *result = db->exec(querry.str());
 	if(result->data.size() == 0){
 		//create user
 		querry.str("");
-		querry<<"INSERT INTO users (name, password, score) VALUES (\'"<<userName<<"\', \'"<<password<<"\', 0.0);";
+		querry<<"INSERT INTO users (name, password, score) VALUES (\'"<<stringToHex(userName)<<"\', \'"<<stringToHex(password)<<"\', 0.0);";
 		delete result;
 
 		result = db->exec(querry.str());
@@ -318,13 +318,13 @@ HttpResponse postTrack(PluginArg arg){
 	if(checkUser(userName, password, db)){
 		int id = getUserId(userName, db);
 		std::stringstream querry;
-		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle, date) VALUES ("<<distance<<", \'"<<vehicle<<" \',"<<time()<<");";
+		querry<<"INSERT INTO tracks_"<<id<<" (distance, vehicle, date) VALUES ("<<distance<<", \'"<<stringToHex(vehicle)<<" \',"<<time()<<");";
 		dbResult *result = db->exec(querry.str());
 		delete result;
 
 		float score = calcScore(id, db);
 		querry.str("");
-		querry<<"UPDATE users SET score = "<<score<<" WHERE name LIKE \'"<<userName<<"\';";
+		querry<<"UPDATE users SET score = "<<score<<" WHERE name LIKE \'"<<stringToHex(userName)<<"\';";
 		result = db->exec(querry.str());
 		delete result;
 	}
@@ -338,10 +338,8 @@ HttpResponse postTrack(PluginArg arg){
 HttpResponse getToplist(PluginArg arg){
 	std::string url = arg.url;
 	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
-	std::stringstream querry;
-	querry<<"SELECT name,score FROM users ORDER BY score DESC;";
 
-	dbResult *result = db->exec(querry.str());
+	dbResult *result = db->exec("SELECT name,score FROM users ORDER BY score DESC;");
 	cJSON *root = cJSON_CreateObject();
 	cJSON *toplist = cJSON_AddArrayToObject(root, "top");
 	
@@ -357,30 +355,6 @@ HttpResponse getToplist(PluginArg arg){
 
 		cJSON_AddItemToArray(toplist, entry);
 	}
-	
-	delete result;
-	const char *data = cJSON_Print(root);
-	cJSON_Delete(root);
-	std::string json = data;
-	delete data;
-	return {200, "application/json", json};
-}
-
-HttpResponse getScore(PluginArg arg){
-	std::string url = arg.url;
-	std::string name(url.begin() + std::min(url.rfind("?name="), url.length()-7) + 6, url.end());
-
-	Sqlite3DB *db = reinterpret_cast<Sqlite3DB*>(arg.arg);
-	std::stringstream querry;
-	querry<<"SELECT score FROM users WHERE name LIKE \'"<<name<<"\';";
-
-	dbResult *result = db->exec(querry.str());
-	cJSON *root = cJSON_CreateObject();
-	
-	float score = strtof(result->data[0][0].c_str(), nullptr);
-
-	cJSON_AddNumberToObject(root, "score", score);
-	cJSON_AddStringToObject(root, "name", name.c_str());
 	
 	delete result;
 	const char *data = cJSON_Print(root);
